@@ -1,18 +1,27 @@
 <template>
   <!-- 모달창 -->
-  <Modal
-    @closeModal="modal_status = false"
-    :원룸들="원룸들"
-    :modal_status="modal_status"
-    :k="k"
-  />
+  <transition name="fade">
+    <Modal
+      @closeModal="modal_status = false"
+      :원룸들="원룸들"
+      :modal_status="modal_status"
+      :k="k"
+    />
+  </transition>
 
   <!-- 메뉴 -->
   <div class="menu">
     <a v-for="작명 in menus" :key="작명">{{ 작명 }}</a>
   </div>
 
-  <Discount />
+  <transition name="fade">
+    <Discount :할인율="할인율" v-if="showDiscount == true" />
+  </transition>
+
+  <button @click="priceSort">가격순 정렬</button>
+  <button @click="priceSortH">가격역순 정렬</button>
+  <button @click="nameSort">이름순 정렬</button>
+  <button @click="sortBack">되돌리기</button>
 
   <!-- 본문 -->
   <Card
@@ -42,7 +51,10 @@ export default {
   name: "App",
   data() {
     return {
+      showDiscount: true,
+      원룸들오리지널: [...data],
       원룸들: data,
+      할인율: 30,
       price: [60, 70, 80],
       products: ["천호동원룸", "무실동원룸", "강남역원룸"],
       menus: ["Home", "Products", "About"],
@@ -55,10 +67,42 @@ export default {
     increase() {
       this.신고수 += 1;
     },
+    priceSort() {
+      this.원룸들.sort(function (a, b) {
+        return a.price - b.price;
+      });
+    },
+    priceSortH() {
+      this.원룸들.sort(function (a, b) {
+        return b.price - a.price;
+      });
+    },
+    nameSort() {
+      this.원룸들.sort(function (a, b) {
+        if (a.title.toLowerCase() < b.title.toLowerCase()) {
+          return -1;
+        }
+        if (a.title.toLowerCase() > b.title.toLowerCase()) {
+          return 1;
+        }
+        return 0;
+      });
+    },
+    sortBack() {
+      this.원룸들 = [...this.원룸들오리지널];
+    },
 
     modal_move() {
       this.modal = true;
     },
+  },
+  mounted() {
+    setInterval(() => {
+      this.할인율 = this.할인율 - 1;
+      if (this.할인율 == 0) {
+        this.showDiscount = false;
+      }
+    }, 500);
   },
 
   components: {
@@ -70,6 +114,26 @@ export default {
 </script>
 
 <style>
+.fade-enter-from {
+  opacity: 0;
+}
+.fade-enter-active {
+  transition: all 1s;
+}
+.fade-enter-to {
+  opacity: 1;
+}
+
+.fade-leave-from {
+  opacity: 1;
+}
+.fade-leave-active {
+  transition: all 1s;
+}
+.fade-leave-to {
+  opacity: 0;
+}
+
 body {
   margin: 0;
 }
